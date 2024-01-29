@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-import kysely.urls   # noqa: F401
+import kysely.urls   
 
 urlpatterns = [
     path('admin/', admin.site.urls),
