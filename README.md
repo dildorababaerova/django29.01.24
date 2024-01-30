@@ -1,6 +1,22 @@
 # django29.01.24
 <!-- 
 django projecti
+python -m venv venv
+Luodaan joku file esim. a.py
+Jos ei toimi
+venv/Scripts/Activate.ps1
+tai Command Promp:iin kirjoitetaan 
+
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+pip install django
+django-admin startproject sivusto /Huom! sivusto voidaan nimettää itse 
+sivusto folder tulee 2, yksi on tyhjä . Tyhjä siirretään ulkopuoleen, nimetään uudelleen
+python manage.py runserver
+python manage.py startapp kysely Huom! kysely app:n nimi. Oma valinta
+python manage.py makemigrations kysely /app:n nimi
+python manage.py migrate
+
+
 https://docs.djangoproject.com/en/5.0/intro/tutorial01/ sivustosta aloitetaan projekti
 django-admin startproject mysite //tässä mysite projectin nimi 
 Aloitetaan tehdä ensimmäinen näkymä 
@@ -129,7 +145,114 @@ class Vaihtoehto(models.Model):
     def __str__(self):
         return self.teksti
 
+Admin sivussa monikot lisätty "s" kijain. Voidaan korjata lisämällä class Meta: model.py tiedostoon. Muista sisennys funktion alle!
+class Meta:
+    verbose_name="kysymys"
+    verbose_name_plural="kysymykset" /Huom! pienillä kirjaimilla
+
+class Meta():
+        verbose_name="vaihtoehto"
+        verbose_name_plural="vaihtoehdot"
+
+  
 Lisätään näkymiä/vews
+
+kysely/views.py¶
+
+def detail(request, question_id):
+    return HttpResponse("You're looking at question %s." % question_id)
+
+
+def results(request, question_id):
+    response = "You're looking at the results of question %s."
+    return HttpResponse(response % question_id)
+
+
+def vote(request, question_id):
+    return HttpResponse("You're voting on question %s." % question_id)
+
+Uusittu versio
+
+def yksityiskohdat(request, question_id):
+    return HttpResponse(f"Katsot juuri kysymystä {question_id}")
+
+
+def tulokset(request, question_id):
+    return HttpResponse(f"Katsot kysymyksen {question_id} tuloksia")
+
+
+def äänestä(request, question_id):
+    return HttpResponse(f"Olet äänestämässä kysymykseen {question_id}")
+
+Huom! Käytettu f(string) muoto 
+
+Liitetään näkymät/views osoitteeseen kysely/urls.py
+
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.indeksi, name="indeksi"),
+    path("<int:question_id>/", views.näytä, name="näytä"),
+    path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
+    path("<int:question_id>/aanesta/", views.äänestä, name="äänestä"),
+]
+
+Haetaan tietokannasta kysymyksiä
+
+kysely/views.py¶
+
+
+from django.http import HttpResponse
+
+from .models import Kysymys /voidaan importoida absolutesti from kysely/models.py
+
+
+def index(request):
+    kysymys_lista = Kysymys.objects.order_by("-julkaisupvm")[:2]
+    vastaus_teksti = ", ".join([q.teksti for q in kysymys_lista])
+    return HttpResponse(vastaus_teksti)
+
+Django:ssa voidaan tehdä pohje/template jotka on html tiedostoa/file mutta sisältää oma django koodia
+
+Luodaan kysely folder:n sisälle uusi folder templates, sen sisälle uusi kansio projektin nimellä kysely. Sen sisälle tulee html file => indeksi.html
+
+kysely/templates/kysely/indeksi.html¶
+
+{% if kysymykset %}
+    <ul>
+    {% for kysymys in kysymykset %}
+        <li><a href="/kysely/{{ question.id }}/">{{ question.teksti }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Ei kyselyitä.</p>
+{% endif %}
+
+Uusitaan indeksi funktio lisämällä kysely/view.py :n 
+
+polls/views.py¶
+from django.shortcuts import render
+
+from .models import Question
+
+
+def index(request):
+    latest_question_list = Question.objects.order_by("-pub_date")[:5]
+    context = {"latest_question_list": latest_question_list}
+    return render(request, "polls/index.html", context)
+
+
+Huom,uusi versio!
+
+def indeksi(request):
+    kysymyslista = Kysymys.objects.order_by("-julkaisupvm")[:2]
+    context = {
+        "kysymykset": kysymyslista
+    }
+    return render(request, "kysely/indeksi.html", context)
+
 
 
 

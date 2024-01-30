@@ -8,6 +8,10 @@ class Kysymys(models.Model):
     def __str__(self):
         return self.teksti
 
+    class Meta():
+        verbose_name="kysymys"
+        verbose_name_plural="kysymykset"
+
 
 
 class Vaihtoehto(models.Model):
@@ -17,3 +21,7 @@ class Vaihtoehto(models.Model):
 
     def __str__(self):
         return self.teksti
+
+    class Meta():
+        verbose_name="vaihtoehto"
+        verbose_name_plural="vaihtoehdot"
