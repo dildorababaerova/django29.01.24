@@ -2,9 +2,10 @@ from django.urls import path
 
 from . import views
 
+app_name = "kysely"
 urlpatterns = [
-    path("", views.indeksi, name="indeksi"),
-    path("<int:question_id>/", views.näytä, name="näytä"),
-    path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
+    path("", views.ListaNäkymä.as_view(), name="indeksi"),
+    path("<int:pk>/", views.NäytäNäkymä.as_view(), name="näytä"),
+    path("<int:pk>/tulokset/", views.TuloksetNäkymä.as_view(), name="tulokset"),
     path("<int:question_id>/äänestä/", views.äänestä, name="äänestä"),
 ]

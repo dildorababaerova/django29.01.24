@@ -1,27 +1,51 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.views import generic
 
-from .models import Kysymys
 
-
+from .models import Kysymys, Vaihtoehto
 
     
 
-def indeksi(request):
-    kysymyslista = Kysymys.objects.order_by("-julkaisupvm")[:2]
-    context = {
-        "kysymykset": kysymyslista
-    }
-    return render(request, "kysely/indeksi.html", context)
+
+class ListaNäkymä(generic.ListView):
+    template_name = "kysely/index.html"
+    context_object_name = "kysymykset"
+
+    def get_queryset(self):
+        return Kysymys.objects.order_by("-julkaisupvm")[:2]
 
 
-def näytä(request, question_id):
-    return HttpResponse(f"Katsot juuri kysymystä {question_id}")
+class NäytäNäkymä(generic.DetailView):
+    model = Kysymys
+    template_name = "kysely/näytä.html"
 
 
-def tulokset(request, question_id):
-    return HttpResponse(f"Katsot kysymyksen {question_id} tuloksia")
+class TuloksetNäkymä(generic.DetailView):
+    model = Kysymys
+    template_name = "kysely/tulokset.html"
 
 
 def äänestä(request, question_id):
-    return HttpResponse(f"Olet äänestämässä kysymykseen {question_id}")
+    kysym = get_object_or_404(Kysymys, pk=question_id)
+    try:
+       valittu = kysym.vaihtoehto_set.get(pk=request.POST["valittu"])
+    except (KeyError, Vaihtoehto.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(
+            request,
+            "kysely/näytä.html",
+            {
+                "kysymys": kysym,
+                "virheviesti": "Ei valittu.",
+            },
+        )
+    else:
+        valittu.ääniä += 1
+        valittu.save()
+        # Always return aion = get_objeRedirect atter successfully dealing
+        # with PoST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse("kysely:tulokset", args=(kysym.id,)))
+    

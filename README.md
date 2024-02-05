@@ -37,7 +37,7 @@ Network
 Näkymä pitää liittää johonkin osoiteeseen 
 Luodaan kysely folderin alle file urls.py
 
-kysely/urls.py
+kysely/urls.py¶
 
 from django.urls import path
 
@@ -49,7 +49,7 @@ urlpatterns = [
 
 kysely apps.py:ssa näkyy urls.py, mutta pitää yhdistää sivuston urls.py:n kanssa
 
-sivusto/urls.py
+sivusto/urls.py¶
 
 from django.contrib import admin
 from django.urls import include, path /Huom! importoidaan include
@@ -60,7 +60,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 
-Kun  mennään ositteen http://127.0.0.1:8000/kyselyt pitää lisätä, muista! 
+Kun  mennään ositteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
 
 sivusto/settings.py lisätään INSTALLED_APPS => kysely tiedosto
 
