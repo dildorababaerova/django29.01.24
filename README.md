@@ -75,7 +75,9 @@ INSTALLED_APPS = [
 ]
 
 Konsolille kirjoitetaan 
+
 python manage.py createsuperuser
+
 Username:admin /itse valitat
 Email address: /ei mitään tyhjä
 Password:admin
