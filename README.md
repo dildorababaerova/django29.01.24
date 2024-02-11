@@ -256,6 +256,54 @@ def indeksi(request):
     return render(request, "kysely/indeksi.html", context)
 
 
+Selain/brouser ei näy djangon dynamista html. Renderin avulla ajetaan djangon html, 
+sen jälkeen näkyy selaimessa. Selain lukee vaan html.
+
+
+Jos kirjoitetaan http://127.0.0.1:8000/näytä jälkeen sanoja tai numeroita silti sivusto näyttää ,ei ilmoita virheitä.  Senn takia:
+
+kysely/views.py
+
+from django.http import Http404 // Huom importoidaan
+from django.shortcuts import render
+
+from .models import Kysymys /Huom! lisätään
+
+
+
+
+
+
+def detail(request, question_id):
+    try:
+        question = Question.objects.get(pk=question_id)
+    except Question.DoesNotExist:
+        raise Http404("Question does not exist")
+    return render(request, "polls/detail.html", {"question": question})
+
+//____________________________________
+def näytä(request, question_id):
+    try:
+        kysymys = Kysymys.objects.get(pk=question_id)
+    except Kysymys.DoesNotExist:
+        raise Http404("Question does not exist")
+    return render(request, "kysely/näytä.html", {"kysymys": kysymys})
+
+
+templates/kysely => lisätään näytä.html file
+
+{{ question }}
+___________________________________
+kysely/templates/kysely/näytä.html¶
+
+{{ kysymys }}
+
+
+Djangossa on get_object_or_404() oma funktio valmiiksi, mitä voi käyttää siihen että, etsii sen objekti teitokannasta. Jos se löytyy, palauttaa sen, jos ei löyty, silloin näyttää virheilmoitusta 404
+polls/views.py¶
+from django.shortcuts import get_object_or_404, r
+
+
 
 
 
