@@ -10,7 +10,7 @@ from .models import Kysymys, Vaihtoehto
 
 
 class ListaNäkymä(generic.ListView):
-    template_name = "kysely/index.html"
+    template_name = "kysely/indeksi.html"
     context_object_name = "kysymykset"
 
     def get_queryset(self):
@@ -27,8 +27,8 @@ class TuloksetNäkymä(generic.DetailView):
     template_name = "kysely/tulokset.html"
 
 
-def äänestä(request, question_id):
-    kysym = get_object_or_404(Kysymys, pk=question_id)
+def äänestä(request, kysymys_id):
+    kysym = get_object_or_404(Kysymys, pk=kysymys_id)
     try:
        valittu = kysym.vaihtoehto_set.get(pk=request.POST["valittu"])
     except (KeyError, Vaihtoehto.DoesNotExist):

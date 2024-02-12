@@ -7,5 +7,5 @@ urlpatterns = [
     path("", views.ListaNäkymä.as_view(), name="indeksi"),
     path("<int:pk>/", views.NäytäNäkymä.as_view(), name="näytä"),
     path("<int:pk>/tulokset/", views.TuloksetNäkymä.as_view(), name="tulokset"),
-    path("<int:question_id>/äänestä/", views.äänestä, name="äänestä"),
+    path("<int:kysymys_id>/äänestä/", views.äänestä, name="äänestä"),
 ]

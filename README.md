@@ -300,11 +300,268 @@ kysely/templates/kysely/näytä.html¶
 
 
 Djangossa on get_object_or_404() oma funktio valmiiksi, mitä voi käyttää siihen että, etsii sen objekti teitokannasta. Jos se löytyy, palauttaa sen, jos ei löyty, silloin näyttää virheilmoitusta 404
+
+
 polls/views.py¶
-from django.shortcuts import get_object_or_404, r
+from django.shortcuts import get_object_or_404, render
+
+from .models import Question
+
+
+# ...
+def detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, "polls/detail.html", {"question": question})
+
+
+____________________________________________________________________
+kysely/views.py¶
+
+
+from django.shortcuts import get_object_or_404, render
+
+from .models import Kysymys
 
 
 
+def näytä(request, kysymys_id):
+    kysym = get_object_or_404(Kysymys, pk=kysymys_id)
+    return render(request, "kysely/näytä.html", {"kysymys": kysym})
+
+Kun vaihdettu question_id => kysymys_id:ksi, pitää vaihtaa kysely/urls.py
+
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("", views.indeksi, name="indeksi"),
+    path("<int:kysymys_id>/", views.näytä, name="näytä"),
+    path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
+    path("<int:question_id>/aanesta/", views.äänestä, name="äänestä"),
+]
+
+
+Luodaan näytä.html lisämällä templates/kysely folderille
+
+Huom! views.py :ssa question_text vaihdettu kysymys, sen takia vaihdetaan kysymyksi
+
+kysely/templates/kysely/näytä.html¶
+
+
+<h1>{{ kysymys.teksti}}</h1>    // Huom! Tässä teksti otettu models.py Kysymys class atribuutista, joka on sidottu Vaihtoehto class modelin 
+                                //kanssa  ForeignKey:lla
+<ul>
+{% for valinta in kysymys.vaihtoehto_set.all %}
+    <li>{{ valinta.teksti }}</li>
+{% endfor %}
+</ul>
+
+
+indeksi.py :ssa huono tapa kirjoittaa ;
+
+<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
+
+sen paikalle korjataan:
+
+<li><a href="{% url 'näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
+
+
+Tässä app:ssa on esim. näytä niminen näkymä. Voisi olla toisessakin app:ssa näytä nimenen näkymä. Estetään sekoitusta toisten app:n kanssa lisäämällä app_name = "kysely"
+
+
+kysely/urls.py¶
+from django.urls import path
+
+from . import views
+
+app_name = "kysely"
+urlpatterns = [
+    path("", views.indeksi, name="indeksi"),
+    path("<int:kysymys_id>/", views.näytä, name="näytä"),
+    path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
+    path("<int:question_id>/äänestä/", views.äänestä, name="äänestä"),
+]
+
+
+sekä vaihdetaan;
+
+kysely/templates/kysely/index.html¶
+
+<li><a href="{% url 'näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
+
+kysely/templates/kysely/index.html¶
+
+<li><a href="{% url 'kysely:näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
+
+
+Luodaan lokeen. Jos lähetetään kysymyksiä palvelimelle, silloin käytetään GET request-
+Jos lähetetään lomakkeen kysely, silloin käytetään post request.
+
+GET metodi sisältää vaan url osoitteen. 
+Jos POST metodi silloin on mahdollistaa lähettää tiedot, esim. lomakkkeen kentät(Lähettäjän kenttä, palautteen kenttän arvot).
+
+Luodaan lomakkeen:
+
+kysely/templates/kysely/näytä.html¶
+
+
+<form action="{% url 'kysely:äänestä' kysymys.id %}" method="post">
+
+{% csrf_token %}  // Huom! käyttäjäturvallisuus
+<fieldset>
+
+    <legend><h1>{{ kysymys.teksti }}</h1></legend>
+
+    {% if virheviesti %}<p><strong>{{ virheviesti }}</strong></p>{% endif %} // kun virheviesti strong näyttää lihavuutena. error vaihtettu 
+                                                                            //virheviestenä tässä sekä views:ssa
+
+    {% for valinta in kysymys.vaihtoehto_set.all %}
+        <input type="radio" 
+        name="choice" 
+        id="vaihtoeht{{ forloop.counter }}" 
+        value="{{ valinta.id }}">
+        <label for="vaihtoeht{{ forloop.counter }}">{{ valinta.teksti }}</label><br>
+    {% endfor %}
+</fieldset>
+<input type="submit" value="Äänestä">
+</form>
+
+Seuraviksessa käsitelty ottaa äänestyksen vaihtoehto vastaan
+
+polls/views.py¶
+from django.http import HttpResponse, HttpResponseRedirect //HUom! importoitu
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+
+from .models import Vaihtoehto, Kysymys
+
+
+# ...
+def äänestä(request, kysymys_id):  // Huom! vaihdetaan urls:py:ssa myös
+    kysym = get_object_or_404(Kysymys, pk=kysymys_id) // Huom! vaihdetaan urls:py:ssa myös
+    try:
+        valittu = kysym.vaihtoehto_set.get(pk=request.POST["choice"])
+    except (KeyError, Vaihtoehto.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(
+            request,
+            "kysely/näytä.html",
+            {
+                "kysymys": kysym,
+                "virheviesti": "Et valinnut mitään",
+            },
+        )
+    else:
+        valittu.ääniä += 1
+        valittu.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse("kysely:tulokset", args=(kysym.id,))) // UUdelleen ohjausta
+
+
+
+Seuravaksi tehdään tulokset.html sivu
+
+kysely/views.py¶
+
+
+from django.shortcuts import get_object_or_404, render
+
+
+def tulokset(request, kysymys_id):   // Huom! vaihdetaan urls:py:ssa myös
+    kysym = get_object_or_404(Kysymys, pk=kysymys_id)   // Huom! vaihdetaan urls:py:ssa myös
+    return render(request, "kysely/tulokset.html", {"kysymys": kysym})
+
+
+Luodaan tulokset.html file
+
+kysely/templates/kysely/tulokset.html¶
+
+
+<h1>{{ kysymys.teksti }}</h1>
+
+<ul>
+{% for vaihtoehto in kysymys.vaihtoehto_set.all %}
+    <li>{{ vaihtoehto.teksti }} -- {{ vaihtoehto.ääniä }} ääntä</li>
+{% endfor %}
+</ul>
+
+<a href="{% url 'kysely:näytä' kysymys.id %}">Äänestätkö uudelleen?</a>
+
+
+voidaan tehdä generic/yleisiä näkymä. Voidaan selviämään vähemmällä koodeilla samasta asiasta.
+
+kysely/views.py¶
+
+
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.views import generic // Huom! importoitu
+
+from .models import Vaihtoehto, Kysymys
+
+
+class ListaNäkymä(generic.ListView):
+    nimi = "kysely/indeksi.html"
+    objekti_nimi = "kysymykset"
+
+    def get_queryset(self):
+        """Palauttaa viimeiset kysymykset."""
+        return Kysymys.objects.order_by("-pub_date")[:2]
+
+
+class NäytäNäkymä(generic.DetailView):
+    model = Kysymys
+    nimi = "kysely/näytä.html"
+
+
+class TuloksetNäkymä(generic.DetailView):
+    model = Kysymys
+    nimi = "kysely/näytä.html"
+
+
+def äänestä(request, kysymys_id):  // Huom! vaihdetaan urls:py:ssa myös
+    kysym = get_object_or_404(Kysymys, pk=kysymys_id) // Huom! vaihdetaan urls:py:ssa myös
+    try:
+        valittu = kysym.vaihtoehto_set.get(pk=request.POST["choice"])
+    except (KeyError, Vaihtoehto.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(
+            request,
+            "kysely/näytä.html",
+            {
+                "kysymys": kysym,
+                "virheviesti": "Et valinnut mitään",
+            },
+        )
+    else:
+        valittu.ääniä += 1
+        valittu.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse("kysely:tulokset", args=(kysym.id,))) // Uudelleen ohjausta
+
+
+
+    kysely/urls.py¶
+
+
+from django.urls import path
+
+from . import views
+
+app_name = "kysely"
+urlpatterns = [
+    path("", views.ListaNäkymä.as_view(), name="indeksi"),
+    path("<int:pk>/", views.NäytäNäkymä.as_view(), name="näytä"),
+    path("<int:pk>/tulokset/", views.TuloksetNäkymä.as_view(), name="tulokset"),
+    path("<int:kysymys_id>/äänestä/", views.äänestä, name="äänestä"),
+]
+    ...
 
 
 
