@@ -25,7 +25,7 @@ class KysymysModelTests(TestCase):
         """
         päivä_ja_yksi_sek = timezone.now() - datetime.timedelta(days=1, seconds=1)
         vanha_kysymys = Kysymys(julkaisupvm=päivä_ja_yksi_sek)
-        self.assertIs(vanha_kysymys.onko_julkaistu_lähiaikoina, False)
+        self.assertIs(vanha_kysymys.onko_julkaistu_lähiaikoina(), False)
 
 
     def test_onko_julkaistu_lähiaikoina_nykyisellä_kysymyksellä(self):
@@ -35,4 +35,4 @@ class KysymysModelTests(TestCase):
         """
         vähimmän_kuin_vuorokausi = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
         tuore_kysymys = Kysymys(julkaisupvm=vähimmän_kuin_vuorokausi)
-        self.assertIs(tuore_kysymys.onko_julkaistu_lähiaikoina, True)
+        self.assertIs(tuore_kysymys.onko_julkaistu_lähiaikoina(), True)

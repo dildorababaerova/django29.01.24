@@ -589,13 +589,24 @@ pip install ipython
 
 Kokeillaan test.py
 
-polls/tests.py¶
+Ensiksi luodaan uusu funktio models.py
+
+kysely/models.py¶
+
+def onko_julkaistu_lähiaikoina(self):
+        nyt = timezone.now()
+        return nyt - datetime.timedelta(days=1) <= self.julkaisupvm <= nyt
+
+
+kysely/tests.py¶
+
+
 import datetime
 
 from django.test import TestCase
 from django.utils import timezone
 
-from .models import Question
+from .models import Kysely
 
 
 class QuestionModelTests(TestCase):
@@ -607,6 +618,41 @@ class QuestionModelTests(TestCase):
         time = timezone.now() + datetime.timedelta(days=30)
         future_question = Question(pub_date=time)
         self.assertIs(future_question.was_published_recently(), False)
+
+class KysymysModelTests(TestCase):
+    def test_onko_julkaistu_lähiaikoina_tulevaisuuden_kysymyksellä(self):
+        """
+        onko_julkaistu_lähiaikoina() returns False for questions whose pub_date
+        is in the future.
+        """
+        tulevaisuuden_aika = timezone.now() + datetime.timedelta(days=30)
+        tulevaisuuden_kysymys = Kysymys(julkaisupvm=tulevaisuuden_aika)
+        vastaus= tulevaisuuden_kysymys.onko_julkaistu_lähiaikoina()
+        self.assertIs(vastaus, False)
+
+    def test_onko_julkaistu_lähiaikoina_vanhalla_kysymyksellä(self):
+        """
+        was_published_recently() returns False for questions whose pub_date
+        is older than 1 day.
+        """
+        päivä_ja_yksi_sek = timezone.now() - datetime.timedelta(days=1, seconds=1)
+        vanha_kysymys = Kysymys(julkaisupvm=päivä_ja_yksi_sek)
+        self.assertIs(vanha_kysymys.onko_julkaistu_lähiaikoina(), False)
+
+
+    def test_onko_julkaistu_lähiaikoina_nykyisellä_kysymyksellä(self):
+        """
+        was_published_recently() returns True for questions whose pub_date
+        is within the last day.
+        """
+        vähimmän_kuin_vuorokausi = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
+        tuore_kysymys = Kysymys(julkaisupvm=vähimmän_kuin_vuorokausi)
+        self.assertIs(tuore_kysymys.onko_julkaistu_lähiaikoina(), True)
+
+
+Konsolin annetaan komento:
+python manage.py test kysely 
+
 
 
 
