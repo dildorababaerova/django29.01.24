@@ -564,11 +564,6 @@ urlpatterns = [
     ...
 
 
-kysely/models.py¶
-
-def onko_julkaistu_lähiaikoina(self):
-    now = timezone.now()
-    return now - datetime.timedelta(days=1) <= self.julkaisupvm <= now
 
 
 Consolissa toimiminen
@@ -591,7 +586,14 @@ Kokeillaan test.py
 
 Ensiksi luodaan uusu funktio models.py
 
+
+Testaus
+
+
 kysely/models.py¶
+
+import datetime // Huom! import
+from django.utils import timezone // Huom! import
 
 def onko_julkaistu_lähiaikoina(self):
         nyt = timezone.now()
@@ -653,7 +655,30 @@ class KysymysModelTests(TestCase):
 Konsolin annetaan komento:
 python manage.py test kysely 
 
+Konsolin kirjoitetaan:
+>>> from django.test.utils import setup_test_environment
+>>> setup_test_environment()
 
+>>> # get a response from '/'
+>>> response = client.get("/")
+Not Found: /
+>>> # we should expect a 404 from that address; if you instead see an
+>>> # "Invalid HTTP_HOST header" error and a 400 response, you probably
+>>> # omitted the setup_test_environment() call described earlier.
+
+>>> response.status_code
+404
+>>> # on the other hand we should expect to find something at '/polls/'
+>>> # we'll use 'reverse()' rather than a hardcoded URL
+
+>>> from django.urls import reverse
+>>> response = client.get(reverse("kysely:indeksi"))
+>>> response.status_code
+200
+>>> response.content
+b'\n    <ul>\n    \n        <li><a href="/polls/1/">What&#x27;s up?</a></li>\n    \n    </ul>\n\n'
+>>> response.context["kysymykset"]
+<QuerySet [<Question: What's up?>]>
 
 
 
