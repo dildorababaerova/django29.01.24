@@ -564,6 +564,56 @@ urlpatterns = [
     ...
 
 
+kysely/models.py¶
+
+def onko_julkaistu_lähiaikoina(self):
+    now = timezone.now()
+    return now - datetime.timedelta(days=1) <= self.julkaisupvm <= now
+
+
+Consolissa toimiminen
+
+python manage.py shell
+
+from kysely.models import Kysymys
+
+Kysymys.objects.all()
+<QuerySet [<Kysymys: Löysitkö työpaikkaa?>, <Kysymys: Tykkäätkö aurinkoa?>]>
+Kysymys.objects.first()
+<Kysymys: Löysitkö työpaikkaa?>
+>>> k.onko_julkaistu_lähiaikoina()
+False // koska lähiaikoina merkitsimme 1 päivä ennen
+
+Asennetaan 
+pip install ipython
+
+Kokeillaan test.py
+
+polls/tests.py¶
+import datetime
+
+from django.test import TestCase
+from django.utils import timezone
+
+from .models import Question
+
+
+class QuestionModelTests(TestCase):
+    def test_was_published_recently_with_future_question(self):
+        """
+        was_published_recently() returns False for questions whose pub_date
+        is in the future.
+        """
+        time = timezone.now() + datetime.timedelta(days=30)
+        future_question = Question(pub_date=time)
+        self.assertIs(future_question.was_published_recently(), False)
+
+
+
+
+
+
+
 
 
 

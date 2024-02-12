@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+import datetime
 
 
 class Kysymys(models.Model):
@@ -11,6 +13,11 @@ class Kysymys(models.Model):
     class Meta():
         verbose_name="kysymys"
         verbose_name_plural="kysymykset"
+
+
+    def onko_julkaistu_lähiaikoina(self):
+        nyt = timezone.now()
+        return nyt - datetime.timedelta(days=1) <= self.julkaisupvm <= nyt
 
 
 
