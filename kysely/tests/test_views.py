@@ -75,3 +75,24 @@ class KysymysIndeksiNäkymäTests(TestCase):
             vastaus.context["kysymykset"],
             [kysymys2, kysymys1],
         )
+
+class KysymysNäytäNäkymäTestit(TestCase):
+    def test_tuleva_kysymys(self):
+        """
+        The detail view of a question with a pub_date in the future
+        returns a 404 not found.
+        """
+        tuleva_kysymys = luo_kysymys(teksti="Tuleva kysymys.", days=5)
+        osoite = reverse("kysely:näytä", args=(tuleva_kysymys.id,))
+        vastaus = self.client.get(osoite)
+        self.assertEqual(vastaus.status_code, 404)
+
+    def test_mennyt_kysymys(self):
+        """
+        The detail view of a question with a pub_date in the past
+        displays the question's text.
+        """
+        mennyt_kysymys = luo_kysymys(teksti="Mennyt kysymys.", days=-5)
+        osoite = reverse("kysely:näytä", args=(mennyt_kysymys.id,))
+        vastaus = self.client.get(osoite)
+        self.assertContains(vastaus, mennyt_kysymys.teksti)

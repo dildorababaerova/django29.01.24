@@ -37,7 +37,9 @@ class ListaNäkymä(generic.ListView):
 class NäytäNäkymä(generic.DetailView):
     model = Kysymys
     template_name = "kysely/näytä.html"
-
+    
+    def get_queryset(self):
+        return Kysymys.objects.filter(julkaisupvm__lte=timezone.now())
 
 class TuloksetNäkymä(generic.DetailView):
     model = Kysymys
