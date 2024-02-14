@@ -652,15 +652,66 @@ class KysymysModelTests(TestCase):
         self.assertIs(tuore_kysymys.onko_julkaistu_lähiaikoina(), True)
 
 
+
+Client ohjelma jolla voidaan ajaa samoja asia mitä webselain lähetää niitä kyselyitä meidän ohjelmalle. Client:n avulla voidaan lähettää kyselyitä meidän ohjelmalle ja voidaan tutkia mitä vastauksia sieltä saatin. Tutorialissa kokeltu shell:ssa.
+Djangon testissa käytettävä asiakas ohjelma, se toimii nyt täällä tavalla, että osoitteet syöttää sinne tekstinä ja sivun sisällön tekstinä. On graafista esitystä, mutta emme nähdä sivua, että se näyttää oikeasti selaimessa. Siihen on oma työkalut miten pystyy sen tekemään, mutta me voidaan tämän avulla voidaan tehdä paljon testaamista. Me pysytytään tarkistamaan, että sieltä tulee oikealainen sivuja ja sivussa oikeanäköinen HTML elementit.
+
 Konsolin annetaan komento:
-python manage.py test kysely 
+ python manage.py shell
 
 Konsolin kirjoitetaan:
 >>> from django.test.utils import setup_test_environment
 >>> setup_test_environment()
+>>> from django.test import Client
+>>> client = Client()
 
->>> # get a response from '/'
+>>> # get a response from '/'  // Viittää HTTP protokollan GET metodin
+
 >>> response = client.get("/")
+
+>>> response 
+>>> response.status_code
+Out[8]: 200
+>>> response.content
+Out[9]: b'\n    <ul>\n    \n        <li><a href="/2/">Tykk\xc3\xa4\xc3\xa4tk\xc3\xb6 aurinkoa?</a></li>\n    \n        <li><a href="/1/">L\xc3\xb6ysitk\xc3\xb6 ty\xc3\xb6paikkaa?</a></li>\n    \n    </ul>\n'
+>>> print(response.content.decode())
+<ul>
+
+        <li><a href="/2/">Tykkäätkö aurinkoa?</a></li>
+
+        <li><a href="/1/">Löysitkö työpaikkaa?</a></li>
+
+    </ul>
+In [10]: response = client.get("/2/")
+In [11]: print(response.content.decode())
+
+<form action="/2/%C3%A4%C3%A4nest%C3%A4/" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="Z0Dfr4SZBLcQiDTQsc0Szt6PIaSjM6kakj6cqOR6i4qgAgGwIGWvuO6C0nvbxui7">
+    <fieldset>
+        <legend><h1>Tykkäätkö aurinkoa?</h1></legend>
+
+
+            <input type="radio"
+            name="valittu"
+            id="vaihtoeht1" value="2">
+            <label for="vaihtoeht1">Kyllä</label><br>
+
+            <input type="radio"
+            name="valittu"
+            id="vaihtoeht2" value="3">
+            <label for="vaihtoeht2">Ei</label><br>
+
+    </fieldset>
+    <input type="submit" value="Äänestä">
+</form>
+
+Voidaan nähdä tuloksessa(print), että näytä.html:n koodin mukaan tuli esille. 
+
+response = client.get("/") 
+print(response.content.decode())
+
+____________________________________________________________________
+djangon tutorial sivusto
 Not Found: /
 >>> # we should expect a 404 from that address; if you instead see an
 >>> # "Invalid HTTP_HOST header" error and a 400 response, you probably
@@ -671,7 +722,7 @@ Not Found: /
 >>> # on the other hand we should expect to find something at '/polls/'
 >>> # we'll use 'reverse()' rather than a hardcoded URL
 
->>> from django.urls import reverse
+>>> from django.urls import rev
 >>> response = client.get(reverse("kysely:indeksi"))
 >>> response.status_code
 200
@@ -679,6 +730,140 @@ Not Found: /
 b'\n    <ul>\n    \n        <li><a href="/polls/1/">What&#x27;s up?</a></li>\n    \n    </ul>\n\n'
 >>> response.context["kysymykset"]
 <QuerySet [<Question: What's up?>]>
+_____________________________________________________________________________
+
+
+Näyttää etusivun. Tässä views.py => class ListäNäkymä:ssä Kysymykset rajoittaa palautettuen kysymysten määrän [:2] eli näyttää vaan 2 kysymystä. Hakeee julkaisun päivämäärän perusteella.("-julkaisupvm") "-" merkki
+tarkoittaa uusin päivämäärä tulee esille ensimmäisenä.
+
+Kokeillaan, että rajoittaa sen, jotta julkaistaan  vasta tulevasuudessa, ei näytetään siitä.
+
+Laitetaan serverin käyntiin.
+python manage.py runserver
+Luodaan uudella pvm:llä kysymys ja vaihtoehdot http://127.0.0.1:8000/admin :ssa.
+mutta kun mennään etusivulle siellä näkyy, vaikka tulevaisuuden kysymys.
+
+kysely/views.py
+
+from django.utils import timezone
+
+class ListaNäkymä(generic.ListView):
+    template_name = "kysely/indeksi.html"
+    context_object_name = "kysymykset"
+
+    def get_queryset(self):
+        nyt = timezone.now()
+
+        #Haetaan kaikki kysymykset
+        kaikki_kysymykset = Kysymys.objects.all()
+
+        # Suodatetaan (filter) kaikista kysymyksistä ne, joiden julkaisupvm on pienempi tai yhtä suuri 
+        # kuin tämänhetkinen aika (muuttujassa "nyt")
+        # Huom! lte = Less Than or Equal
+        ei_tulevaisuudessa = kaikki_kysymykset.filter(julkaisupvm__lte = nyt).order_by
+
+        # Järjestetään julkaisupvm:n päivämäärän mukaan
+        # Huom! "-" merkki edessä kääntää järjestyksen niin, että suuret 
+        # arvot tulevat ennen pieniä, jolloin uusimmat kysymykset ovat ensemmäisenä
+        järjestetyt_kysymykset=ei_tulevaisuudessa("-julkaisupvm")
+        
+        return järjestetyt_kysymykset[:2]
+
+Nämät koodit tulivät näkymään class ListaNäkymä: n def get_queryset(self):n. Silla voi rajoittaa ListView :ssa mitä sen Listassa näkyy.
+
+Jos otetaan pois get_queryset() ja kirjoitetaan paikalle model = Kysymys tulee kaikki kysymyksiä.
+
+Kun luodaan uuden folderin test/test_models.py // Huom! test_models.py:ssa importoitu models :n eteen pitäisi laittaa 2"..".
+Koska models tulee ylifolderista eli kysely:sta. Se ei ole test folderissa.
+Django ei näy test_models.py. Luodaan uusi file __init__.py test folderin sisälle.
+
+
+test/test_models.py
+
+from django.urls import reverse
+from django.utils import timezone
+import datetime
+from django.test import TestCase
+from ..models import Kysymys
+
+
+def luo_kysymys(teksti, days):
+    """
+    Create a kysymys with the given `teksti` and published the
+    given number of `days` offset to now (negative for questions published
+    in the past, positive for questions that have yet to be published).
+    """
+    aika = timezone.now() + datetime.timedelta(days=days)
+    return Kysymys.objects.create(
+        teksti=teksti, 
+        julkaisupvm=aika)
+
+
+class KysymysIndeksiNäkymäTests(TestCase):
+    def test_ei_kysymyksiä(self):
+        """
+        If no questions exist, an appropriate message is displayed.
+        """
+        vastaus = self.client.get(reverse("kysely:indeksi"))
+        self.assertEqual(vastaus.status_code, 200)
+
+        #print(vastaus.content) // Huom! voidaan katsoa vastauksen sisältöä
+
+        self.assertContains(vastaus, "Ei kyselyitä saatavilla.")
+        self.assertQuerySetEqual(vastaus.context["kysymykset"], [])
+
+    def test_mennyt_kysymys(self):
+        """
+        Question with a pub_date in the past are displayed on the
+        index page.
+        """
+        kysymys = luo_kysymys(teksti="Mennyt kysymys.", days=-30)
+        vastaus = self.client.get(reverse("kysely:indeksi"))
+        self.assertQuerySetEqual(
+            vastaus.context["kysymykset"],
+            [kysymys],
+        )
+
+    def test_tuleva_kysymys(self):
+        """
+        Question pub_date in the future aren't displayed on
+        the index page.
+        """
+        luo_kysymys(teksti="Tuleva kysymys.", days=30)
+        vastaus = self.client.get(reverse("kysely:indeksi"))
+        self.assertContains(vastaus, "Ei kyselyitä saatavilla.")
+        self.assertQuerySetEqual(vastaus.context["kysymykset"], [])
+
+    def test_tuleva_kysymys_ja_mennyt_kysymys(self):
+        """
+        Even if both past and future kysymyss exist, only past kysymyss
+        are displayed.
+        """
+        kysymys = luo_kysymys(teksti="Mennyt kysymys.", days=-30)
+        luo_kysymys(teksti="Mennyt kysymys.", days=30)
+        vastaus = self.client.get(reverse("kysely:indeksi"))
+        self.assertQuerySetEqual(
+            vastaus.context["kysymykset"],
+            [kysymys],
+        )
+
+    def test_2_mennyttä_kysymystä(self):
+        """
+        The questions index page may display multiple questions.
+        """
+        kysymys1 = luo_kysymys(teksti="Mennyt kysymys 1.", days=-30)
+        kysymys2 = luo_kysymys(teksti="Mennyt kysymys 2.", days=-5)
+        vastaus = self.client.get(reverse("kysely:indeksi"))
+        self.assertQuerySetEqual(
+            vastaus.context["kysymykset"],
+            [kysymys2, kysymys1],
+        )
+
+
+
+
+
+
 
 
 

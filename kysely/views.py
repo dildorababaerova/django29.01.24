@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
+from django.utils import timezone
 
 
 from .models import Kysymys, Vaihtoehto
@@ -14,7 +15,23 @@ class ListaNäkymä(generic.ListView):
     context_object_name = "kysymykset"
 
     def get_queryset(self):
-        return Kysymys.objects.order_by("-julkaisupvm")[:2]
+        nyt = timezone.now()
+
+        #Haetaan kaikki kysymykset
+        kaikki_kysymykset = Kysymys.objects.all()
+
+        # Suodatetaan (filter) kaikista kysymyksistä ne, joiden julkaisupvm on pienempi tai yhtä suuri 
+        # kuin tämänhetkinen aika (muuttujassa "nyt")
+        # Huom! lte = Less Than or Equal
+        ei_tulevaisuudessa = kaikki_kysymykset.filter(julkaisupvm__lte = nyt).order_by
+
+        # Järjestetään julkaisupvm:n päivämäärän mukaan
+        # Huom! "-" merkki edessä kääntää järjestyksen niin, että suuret 
+        # arvot tulevat ennen pieniä, jolloin uusimmat kysymykset ovat ensemmäisenä
+        järjestetyt_kysymykset=ei_tulevaisuudessa("-julkaisupvm")
+        
+        # Palautetaan järjestettyjen kysymyksen listan alusta 2 ensimmäistä
+        return järjestetyt_kysymykset[:2]
 
 
 class NäytäNäkymä(generic.DetailView):
