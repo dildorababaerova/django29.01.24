@@ -901,7 +901,7 @@ class KysymysNäytäNäkymäTestit(TestCase):
 
 
  Meidän ohjelma lähettää HTML vastauksia, mitkä olimme tehneet python koodilla. Sen lisäksi pystymme lähettää kuvia, JS tai CSS.
- Djangossa pyhutaan static fileksi. Pythonilla luotu vastauksia sanotaan dynaamisia vastauksia.
+ Djangossa puhutaan static fileksi. Pythonilla luotu vastauksia sanotaan dynaamisia vastauksia.
 
  Lähetään rakentaa ohjeen mukaisesti tyylejä.
 
