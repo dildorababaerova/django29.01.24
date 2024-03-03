@@ -918,6 +918,23 @@ kysely/templates/kysely/indeksi.html
 
 <link rel="stylesheet" href="{% static 'kysely/style.css' %}">
 
+Miten pitäisi laittaa palvelimelle. Ei tule django application läpi, static tiedostot tulevat suoraan webserveriltä.
+Turha käyttä python koodija. Jos paljon kuvia ja tiedostoja, käytänössä CDN Content Delivery Network palvelu. Voidaan sitä kautta menemään sisältöä esimerkiksi joilta toiselta palvelimelta lähimpänä sitä käyttäjä. Staatinen tiedostoa voidaan helppo kopioida.
+
+
+Jos halutaan eri järjestyksen admin sivulla, päivämäärä näytetään ennen tekstiä:
+
+from django.contrib import admin
+
+from .models import Kysymys
+
+
+class KysymysAdmin(admin.ModelAdmin):
+    kentä = ["julkaisupvm", "teksti"]
+
+
+admin.site.register(Kysymys, KysymysAdmin)
+
 
 
 
