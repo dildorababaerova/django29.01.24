@@ -950,6 +950,57 @@ class KysymysAdmin(admin.ModelAdmin):
 admin.site.register(Kysymys, KysymysAdmin)
 
 
+Kun painetaan vasemmän puolen debug merkki, tulee create a launch.json file. Mennään sinne,  tulee ylhäältä paalikossta Python Debugger. Mennään sinne
+ja valitaan Django Launch and debug a Django web application. Vaihdetaan =>
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django runserver",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}\\manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "justMyCode": false
+        }
+    ]
+}
+
+Etsiminen/filtroiminen adminissa, kysely/admin.py:ssa:
+
+
+from django.contrib import admin
+
+from .models import Kysymys, Vaihtoehto
+ 
+
+
+@admin.register(Kysymys)
+class KysymysAdmin(admin.ModelAdmin):
+    fields = [
+("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
+("Sisältö", {"fields": ["teksti"]}),
+]
+inlines = [VastausvaihtoehtoInline]
+list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
+
+
+@admin.register(Vaihtoehto)
+class VaihtoehtoAdmin(admin.ModelAdmin):
+    list_display = ["kysymys", "teksti"]
+    search_fields = ["question_text"]
+
+
+
+
+
 
 
 
