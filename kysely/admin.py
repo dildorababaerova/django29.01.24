@@ -17,13 +17,13 @@ class KysymysAdmin(admin.ModelAdmin):
     inlines = [VastausvaihtoehtoInline]
     list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
     search_fields = ["teksti"]
-    list_per_page = 4
+    # list_per_page = 4
 
 @admin.register(Vaihtoehto)
 class VaihtoehtoAdmin(admin.ModelAdmin):
     list_display = ["kysymys", "teksti"]
     search_fields = ["teksti", "kysymys__teksti"]
-    list_per_page = 6
-    list_max_show_all = 8
+    # list_per_page = 6
+    # list_max_show_all = 8
     autocomplete_fields = ["kysymys"]
     
