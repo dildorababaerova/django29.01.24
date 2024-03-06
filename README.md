@@ -979,23 +979,141 @@ Etsiminen/filtroiminen adminissa, kysely/admin.py:ssa:
 from django.contrib import admin
 
 from .models import Kysymys, Vaihtoehto
- 
+
+class VastausvaihtoehtoInline(admin.TabularInline):
+    model = Vaihtoehto
+    extra = 3
 
 
 @admin.register(Kysymys)
 class KysymysAdmin(admin.ModelAdmin):
-    fields = [
-("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
-("Sisältö", {"fields": ["teksti"]}),
-]
-inlines = [VastausvaihtoehtoInline]
-list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
-
+    # date_hierarchy = "julkaisupvm"
+    fieldsets = [
+        ("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
+        ("Sisältö", {"fields": ["teksti"]}),
+    ]
+    inlines = [VastausvaihtoehtoInline]
+    list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
+    search_fields = ["teksti"] # search_fields = ["question_text"]  => question_text => vaihdettu tekstiksi
 
 @admin.register(Vaihtoehto)
 class VaihtoehtoAdmin(admin.ModelAdmin):
     list_display = ["kysymys", "teksti"]
+    # Voidaan lisätä "Vaihtoehdolle" myös 
+    search_fields = ["teksti"] # Tai search_fields = ["teksti", "kysymys__teksti"]  kun lisätään "kysymys__teksti", se etsii kysymys kentältä. Huom! kaksi alaviiva.
+Jos katsotaan modelia klikkamalla Ctrl ja Vaihtoehto, mennään model.py:n. Siellä nähdään 
+kysymys = models.ForeignKey(Kysymys, on_delete=models.CASCADE)
+Kysymys viittää toisen modeliin ForeignKey:lla. Tietokannassa Kysymys on id numerona. Emme voi suoraan käyttää id numerolla hakukentällä, koska se on vaan numero. Jos halutaan kysymys teksteinä, pitää sanoa Django:lle numeron kautta pitää etsiä tekstit. Siihen toimii Djangossa kahden alaviivaa merkintötapa.
+
+Django admin sivuttain näyttää oletuksena 100 kerrallaan. Django sivussa linkki miten pystyy vaihtamaan sitä. Sinne pystyy lisäämään list_per_page
+
+from django.contrib import admin
+
+from .models import Kysymys, Vaihtoehto
+
+class VastausvaihtoehtoInline(admin.TabularInline):
+    model = Vaihtoehto
+    extra = 3
+
+
+@admin.register(Kysymys)
+class KysymysAdmin(admin.ModelAdmin):
+    # date_hierarchy = "julkaisupvm"
+    fieldsets = [
+        ("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
+        ("Sisältö", {"fields": ["teksti"]}),
+    ]
+    inlines = [VastausvaihtoehtoInline]
+    list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
+    search_fields = ["teksti"]
+    list_per_page = 4
+
+@admin.register(Vaihtoehto)
+class VaihtoehtoAdmin(admin.ModelAdmin):
+    list_display = ["kysymys", "teksti"]
+    search_fields = ["teksti", "kysymys__teksti"]
+    list_per_page = 6  # kuinka monta sivua voidaan näyttää 
+    list_max_show_all = 8 # voidaan rajoittaa max sivut määrämällä
+
+
+Tulee ongelma Django adminissa, jos siellä on viittauksen toiseen modeliin, esim.muokkaa vaihtoehto sivulla, Kysymys kentää viitää Kysymys modelin. Oletuksena renderoi kaikki kysymyksiä mitkä tietokannassa on. Jos ajatellaan, ettää käyttäjät vaikka 10 000 ja käyttävät kenta, siellä voisi olla todella paljon kysymyksia ja lataaminen vie hirveä paljon aika. Sinne on ratkaisu miten voi estää:
+
+https://docs.djangoproject.com/en/5.0/ref/contrib/admin/
+Siellä pitää olla search_fields määritelty.
+______________________________________
+Huom! Djangon versio
+class QuestionAdmin(admin.ModelAdmin):
+    ordering = ["date_created"]
     search_fields = ["question_text"]
+class ChoiceAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["question"] # Pitää lisätä
+_________________________________________
+
+
+
+from django.contrib import admin
+
+from .models import Kysymys, Vaihtoehto
+
+class VastausvaihtoehtoInline(admin.TabularInline):
+    model = Vaihtoehto
+    extra = 3
+
+
+@admin.register(Kysymys)
+class KysymysAdmin(admin.ModelAdmin):
+    # date_hierarchy = "julkaisupvm"
+    fieldsets = [
+        ("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
+        ("Sisältö", {"fields": ["teksti"]}),
+    ]
+    inlines = [VastausvaihtoehtoInline]
+    list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
+    search_fields = ["teksti"]
+    list_per_page = 4
+
+@admin.register(Vaihtoehto)
+class VaihtoehtoAdmin(admin.ModelAdmin):
+    list_display = ["kysymys", "teksti"]
+    search_fields = ["teksti", "kysymys__teksti"]
+    list_per_page = 6  
+    list_max_show_all = 8 
+    autocomplete_fields = ["kysymys"] # Tulee ladattua aika nopeasti!!!!
+
+Voidaaan lisätä consoliin muutamia kysymyksiä.
+python manage.py shell
+In [3]: from kysely.models import Kysymys
+
+Kysymys.objects.all()
+ # Otetaan joku teksti
+text = """
+joku teksti
+"""
+In [7]: sanat = text.split()
+
+In [8]: import random
+In [9]: random.choice(sanat)
+
+In [10]: ' '.join([random.choice(sanat) for x in range (random.randint(4, 7))])
+In [11]: def satunainen_lause(): return ' '.join([random.choice(sanat) for x in range (random.randint(4, 7))])
+
+In [23]: kysymykset =[Kysymys(teksti=satunainen_lause() + "?", julkaisupvm= "2024-01-01T00:00:00+02:00") for i in range(1000)]
+In [24]: len(kysymykset)
+Out[24]: 1000
+
+In [25]: kysymykset[4]
+In [29]: Kysymys.objects.bulk_create(kysymykset)
+#Voidaan katsoa kuinka monta kysymyksiä tietokannassa 
+In [30]: Kysymys.objects.count()
+
+
+
+
+
+    
+
+
+
 
 
 
