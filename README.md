@@ -907,6 +907,14 @@ class KysymysNäytäNäkymäTestit(TestCase):
 
  Lisätään kysely/static/kysely/style.css
 
+ 
+ body {
+    background: white url("images/background.jpg") no-repeat;
+}
+
+li a {
+    color: rgb(44, 28, 212);
+}
  li a {
     color: green;
 }
@@ -918,8 +926,14 @@ kysely/templates/kysely/indeksi.html
 
 <link rel="stylesheet" href="{% static 'kysely/style.css' %}">
 
+
+
+kysely/static/kysely/style.css
+
+luodaan uusi tiedisto images ja sinne lisätään kuvia. Meidän tapaukessa lisätty background.jpg.
+
 Miten pitäisi laittaa palvelimelle. Ei tule django application läpi, static tiedostot tulevat suoraan webserveriltä.
-Turha käyttä python koodija. Jos paljon kuvia ja tiedostoja, käytänössä CDN Content Delivery Network palvelu. Voidaan sitä kautta menemään sisältöä esimerkiksi joilta toiselta palvelimelta lähimpänä sitä käyttäjä. Staatinen tiedostoa voidaan helppo kopioida.
+Turha käyttä python koodija. Jos paljon kuvia ja tiedostoja, käytänössä CDN Content Delivery Network palvelu. Voidaan siitä kautta menemään sisältöä esimerkiksi joilta toiselta palvelimelta lähimpänä siitä käyttäää. Staatinen tiedostoa voidaan helppo kopioida.
 
 
 Jos halutaan eri järjestyksen admin sivulla, päivämäärä näytetään ennen tekstiä:
@@ -934,6 +948,8 @@ class KysymysAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Kysymys, KysymysAdmin)
+
+
 
 
 
