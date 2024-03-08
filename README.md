@@ -1106,6 +1106,25 @@ In [29]: Kysymys.objects.bulk_create(kysymykset)
 #Voidaan katsoa kuinka monta kysymyksiä tietokannassa 
 In [30]: Kysymys.objects.count()
 
+Konsolin lisätään 10 vuoden päivämäärät 
+
+from kysely.models import Kysymys
+In [4]: Kysymus.objects.filter(julkaisupvm="2024-01-01T00:00:00+02:00").count()
+In [6]: k=Kysymys.objects.filter(julkaisupvm="2024-01-01T00:00:00+02:00")
+In [7]: k.count()
+In [9]: k[0].julkaisupvm
+Out[9]: datetime.datetime(2023, 12, 31, 22, 0, tzinfo=datetime.timezone.utc)
+n [10]: d=k[0].julkaisupvm
+In [11]: from datetime import timedelta
+In [12]: import random
+In [16]: for x in k:
+    ...:     x.julkaisupvm = d-timedelta(seconds=random.randint(60*60*24*365, 10*60*60*24*365))
+    ...:
+In [17]: Kysymys.objects.bulk_update(k, ["julkaisupvm"])
+Out[17]: 1115
+
+In [18]: k[5].julkaisupvm
+Out[18]: datetime.datetime(2014, 9, 5, 22, 40, 58, tzinfo=datetime.timezone.utc)
 
 
 
