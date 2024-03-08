@@ -22,4 +22,5 @@ import kysely.urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include(kysely.urls)),
+    path("__debug__/", include("debug_toolbar.urls")),
 ]

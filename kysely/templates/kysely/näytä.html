@@ -1,3 +1,7 @@
+{% extends 'kysely/base.html' %}
+
+{% block content %}
+
 <form action="{% url 'kysely:äänestä' kysymys.id %}" method="post">
     {% csrf_token %}
     <fieldset>
@@ -12,3 +16,5 @@
     </fieldset>
     <input type="submit" value="Äänestä">
 </form>
+
+{% endblock %}
