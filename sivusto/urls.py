@@ -17,7 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-import kysely.urls   
+
+import kysely.urls  
+import debug_toolbar.urls 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
