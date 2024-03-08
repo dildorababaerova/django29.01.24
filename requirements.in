@@ -2,3 +2,4 @@ django
 django-debug-toolbar
 ipython
 pip-tools
+django-allauth

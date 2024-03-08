@@ -1127,6 +1127,181 @@ In [18]: k[5].julkaisupvm
 Out[18]: datetime.datetime(2014, 9, 5, 22, 40, 58, tzinfo=datetime.timezone.utc)
 
 
+https://medium.com/@franciscovcbm/infinite-scroll-with-django-and-htmx-27f61cfaf911 voidaan katsoa oppimaan syvemmin
+
+Voidaan vaihtaa/ylikirjoittaa django admin:n sivu omalla tavalla.Tassa esimerkki miten voidaan vaihtaa etupääotsikko
+
+venv=> lib/python3.10/site-packages => django => contrib => admin => templates => admin => base_site.html sieltä otetaan copy ja paste sivusto/templates alle admin/base_site.html tiedosto:
+
+
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></div> # HUom!!! Täässä vaihdettu {{ site_header|default:_('Django administration') }} => Kyselyiden hallinta:ksi.
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+
+Voidaan instaloida Django_Debug_Toolbar
+
+pip install django-debug-toolbar
+Pitää tarkistaa onko settings.py :ssa INSTALLED_APPS:ssa 'django.contrib.staticfiles', asennettuna
+ja TEMPLATES:ssa varmistaa
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        # ...
+    }
+]
+
+ja pitää lisätä INSTALLED_APPS:in 
+
+INSTALLED_APPS = [
+    # ...
+    "debug_toolbar",
+    # ...
+]
+
+ja pitää lisätä URLs:in 
+
+from django.urls import include, path
+
+urlpatterns = [
+    # ...
+    path("__debug__/", include("debug_toolbar.urls")),
+]
+
+Sitten lisäätään:
+MIDDLEWARE = [
+    # ...
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # ...
+]
+
+Sitten lisätään:
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+
+
+templates\kysely:n sisällä olevien html tiedostoihin lisätään 
+<html>
+<body>
+# ...
+</html>
+</body>
+
+Voidaan lisätä requirments.txt. Se on yleensä semmonen teidosto, mistä pip insall packet:t asentaa. 
+pip freeze > requirements.txt
+ja erilla tavalla:
+pip install pip-tools
+Ja luodaan uusi tiedosto
+requirements.in
+django
+django-debug-toolbar
+
+ja ajetaan 
+pip-compile
+
+Se lukee requirements.in tiedoston ja luo sen perusteella uuden requirements.txt
+
+Jos lisätään 
+ipython  => requirements.in tiedostoon
+pip-tools  => requirements.in tiedostoon
+pitää ajaa uudestaan pip-compile
+
+kun ajetaan 
+pip install -r requirements.txt täällä tavalla pystyy asentamaan kaikki paketit, mitä requirements.txt:ssa on 
+
+Tehdään base.html => templates\kysely:n
+Voidaan periytää 
+{% load static %}
+<html>
+<body>
+<head>
+<link rel="stylesheet" href="{% static 'kysely/style.css' %}">
+
+{% block content %}
+{% end block %}
+</head>
+</body>
+</html>
+
+Ja muutetaan muita html tiedostoja lisäämällä 
+
+{% extends 'kysely/base.html' %}
+
+Otetaan {% load static %} pois.
+
+{% extends kysely/base.html %} ensimmäisenä rivinä
+
+Ja otetaan pois
+
+<html>
+<body>
+<head>
+<link rel="stylesheet" href="{% static 'kysely/style.css' %}">
+
+</head>
+</body>
+</html>
+
+Ja html sisältö laitetaan 
+
+{% block content %}
+Huom!sisältö tänne
+{% end block %}
+
+
+Eli esimerkiksi index.html:
+
+
+{% extends 'kysely/base.html' %}
+
+{% block content %}
+
+{% if kysymykset %}
+    <ul>
+    {% for kysym in kysymykset %}
+        <li><a href="{% url 'kysely:näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Ei kyselyitä saatavilla.</p>
+{% endif %}
+{% endblock %}
+
+
+
+
+Tässä muutamia linkkija vaihtamaan django admin:n:
+
+https://github.com/sehmaschine/django-grappelli //vaihtaa admin sivua
+
+https://github.com/pennersr/django-allauth // lisää facebook tai google kirjautumisen 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     

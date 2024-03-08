@@ -1,21 +1,18 @@
 {% load static %}
 <html>
-
 <head>
 <link rel="stylesheet" href="{% static 'kysely/style.css' %}">
 </head>
 
 <body>
 <nav class="nav">
-  
-       <a href="{% url 'kysely:indeksi' %}">Etusivu</a>
-       <a href="{% url 'admin:index' %}">Hallinta</a>
-        
-  
+    <ul>
+        <li><a href="{% url 'kysely:indeksi' %}">Etusivu</a></li>
+        <li><a href="{% url 'admin:index' %}">Hallinta</a></li>
+    </ul>
 </nav>
 
 {% block content %}
 {% endblock %}
-
 </body>
 </html>

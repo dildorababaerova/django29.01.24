@@ -1,11 +1,26 @@
-body {
-    background: white url("images/background.jpg") no-repeat;
+html {
+    background: hsl(109, 100%, 95%) url("images/background.jpg");
 }
 
 li a {
-    color: rgb(44, 28, 212);
+    color: green;
 }
 
-nav {
-    background: yellow;
+nav ul {
+    background: hsla(64, 93%, 61%, 0.366);
+    margin: 0px;
+    padding: 0.5ex 2ex;
+}
+
+nav li {
+    display: inline;
+    font-size: 85%;
+}
+
+nav li:before {
+    content: "[";
+}
+
+nav li:after {
+    content: "]";
 }
