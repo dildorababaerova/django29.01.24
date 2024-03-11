@@ -19,8 +19,6 @@ from django.urls import include, path
 
 
 import kysely.urls  
-import debug_toolbar.urls 
-import allauth.urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
