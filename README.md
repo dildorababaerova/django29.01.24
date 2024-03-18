@@ -11,6 +11,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 pip install django
 django-admin startproject sivusto /Huom! sivusto voidaan nimettää itse 
 sivusto folder tulee 2, yksi on tyhjä . Tyhjä siirretään ulkopuoleen, nimetään uudelleen
+manage.py file myös siirretään ulkopuolelle
 python manage.py runserver
 python manage.py startapp kysely Huom! kysely app:n nimi. Oma valinta
 python manage.py makemigrations kysely /app:n nimi
@@ -60,7 +61,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 
-Kun  mennään ositteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
+Kun  mennään osdjanitteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
 
 sivusto/settings.py lisätään INSTALLED_APPS => kysely tiedosto
 
@@ -106,7 +107,7 @@ class Vaihtoehto(models.Model):
     teksti = models.CharField(max_length=200)
     aanet = models.IntegerField(default=0)
 
-Nämät modulit kuvaille mitää tietokantaan pitää tallentaa,käyttänössä tietokantataulu
+Nämät modulit kuvailee mitää tietokantaan pitää tallentaa,käyttänössä tietokantataulu
 Jos halutaan katsoa db.sqlite3: ssa VS Extenions paalikoista valitaan SQLite Viewer  
 
 models.py :ssa
