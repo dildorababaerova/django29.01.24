@@ -135,6 +135,8 @@ TIME_ZONE = 'Europe/Helsinki'
 
 Teksti näyttää object:lta, vaihdetaan tekstiksi lisäämällä models.py class:in alle
 
+(riittä kun laitetään etusivulle???)
+
 from django.db import models
 
 class Kysymys(models.Model):
