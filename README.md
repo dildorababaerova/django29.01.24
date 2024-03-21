@@ -259,7 +259,7 @@ def indeksi(request):
     return render(request, "kysely/indeksi.html", context)
 
 
-Selain/brouser ei näy djangon dynamista html. Renderin avulla ajetaan djangon html, 
+Selain/browser ei näy djangon dynamista html. Renderin avulla ajetaan djangon html, 
 sen jälkeen näkyy selaimessa. Selain lukee vaan html.
 
 
