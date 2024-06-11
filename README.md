@@ -12,6 +12,7 @@ pip install django
 django-admin startproject sivusto /Huom! sivusto voidaan nimettää itse 
 sivusto folder tulee 2, yksi on tyhjä . Tyhjä siirretään ulkopuoleen, nimetään uudelleen
 manage.py file myös siirretään ulkopuolelle
+Toinen vaihtoehto `django-admin startproject sivusto .` Huom välilyönti ja piste!
 python manage.py runserver
 python manage.py startapp kysely Huom! kysely app:n nimi. Oma valinta
 python manage.py makemigrations kysely /app:n nimi
