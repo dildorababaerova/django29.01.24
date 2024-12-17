@@ -1,5 +1,5 @@
 # django29.01.24
-<!-- 
+
 django projecti
 python -m venv venv
 Luodaan joku file esim. a.py
@@ -62,7 +62,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 ]
 
-Kun  mennään osdjanitteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
+Kun  mennään osoitteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
 
 sivusto/settings.py lisätään INSTALLED_APPS => kysely tiedosto
 
