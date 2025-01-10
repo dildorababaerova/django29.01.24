@@ -1,7 +1,7 @@
 # django29.01.24
 
 django projecti
-python -m venv venv
+`python -m venv venv`
 Luodaan joku file esim. a.py
 Jos ei toimi
 venv/Scripts/Activate.ps1
@@ -13,11 +13,10 @@ django-admin startproject sivusto /Huom! sivusto voidaan nimettää itse
 sivusto folder tulee 2, yksi on tyhjä . Tyhjä siirretään ulkopuoleen, nimetään uudelleen
 manage.py file myös siirretään ulkopuolelle
 Toinen vaihtoehto `django-admin startproject sivusto .` Huom välilyönti ja piste!
-python manage.py runserver
-python manage.py startapp kysely Huom! kysely app:n nimi. Oma valinta
-python manage.py makemigrations kysely /app:n nimi
-python manage.py migrate
-
+`python manage.py runserver`
+`python manage.py startapp kysely` Huom! kysely app:n nimi. Oma valinta
+`python manage.py makemigrations` kysely /app:n nimi
+`python manage.py migrate`
 
 https://docs.djangoproject.com/en/5.0/intro/tutorial01/ sivustosta aloitetaan projekti
 django-admin startproject mysite //tässä mysite projectin nimi 
@@ -25,12 +24,13 @@ Aloitetaan tehdä ensimmäinen näkymä
 
 kysely/views.py¶
 
+``` py
 from django.http import HttpResponse
 
 def indeksi(request): /Huom! tässä index vaihdettu indeksi
     return HttpResponse("Hello, world. You're at the polls index.") 
 
-
+```
 
 Jos haluat kysymyksiä ja vastauksia voidaan käyttää F12 nappi tai Ctrl+Shift+i
  WebDeveloperTools
@@ -39,6 +39,7 @@ Network
 Näkymä pitää liittää johonkin osoiteeseen 
 Luodaan kysely folderin alle file urls.py
 
+``` py
 kysely/urls.py¶
 
 from django.urls import path
@@ -48,11 +49,13 @@ from . import views
 urlpatterns = [
     path("", views.indeksi, name="index"),
 ]
+``` 
 
 kysely apps.py:ssa näkyy urls.py, mutta pitää yhdistää sivuston urls.py:n kanssa
 
 sivusto/urls.py¶
 
+``` py
 from django.contrib import admin
 from django.urls import include, path /Huom! importoidaan include
 import kysely.urls /importoitu
@@ -61,11 +64,13 @@ urlpatterns = [
     path("kyselyt/", include(kysely.urls)), / Huom! polls vaihdettu kyselyt ja include:n sisällä kysely 
     path("admin/", admin.site.urls),
 ]
+``` 
 
 Kun  mennään osoitteen http://127.0.0.1:8000/kyselyt  //pitää lisätä '/' jälkeen kyselyt, muista! 
 
 sivusto/settings.py lisätään INSTALLED_APPS => kysely tiedosto
 
+``` py
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -75,16 +80,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'kysely'
 ]
-
+``` 
 Konsolille kirjoitetaan 
 
-python manage.py createsuperuser
-
+`python manage.py createsuperuser`
+```
 Username:admin /itse valitat
 Email address: /ei mitään tyhjä
 Password:admin
 Password(again):
 Bypass....[y/N]?: y ja enter
+```
 
 Mennään admin sivulle
 Groups /voidaan vaihtaa salasana sekä käyttäjä
@@ -94,7 +100,7 @@ Mennään djangon https://docs.djangoproject.com/en/5.0/intro/tutorial02/ sivull
 
 kysely/models.py¶
 
-
+```py
 from django.db import models
 
 
@@ -108,6 +114,8 @@ class Vaihtoehto(models.Model):
     teksti = models.CharField(max_length=200)
     aanet = models.IntegerField(default=0)
 
+```
+
 Nämät modulit kuvailee mitää tietokantaan pitää tallentaa,käyttänössä tietokantataulu
 Jos halutaan katsoa db.sqlite3: ssa VS Extenions paalikoista valitaan SQLite Viewer  
 
@@ -116,23 +124,27 @@ class modelit pitää yhdistää ja ForegnKey yhdistetään
 
 kysely/admin.py 
 
+```py
 from django.contrib import admin
 
 from .models import Kysymys, Vaihtoehto
 
 admin.site.register(Kysymys)
-
-
-On mahdollista Vaihtoehtomodelin lisätä kenttä list: kysymys ja teksti
+```
+//On mahdollista Vaihtoehtomodelin lisätä kenttä list: kysymys ja teksti
+```py
 @admin.register(Vaihtoehto)
 class VaihtoehtoAdmin(admin.ModelAdmin):
     list_display = ["kysymys", "teksti"]
 
-Vaihdettu TIME_ZONE sekä LANGUAGE_CODE
+```
 
+Vaihdettu TIME_ZONE sekä LANGUAGE_CODE
+```
 LANGUAGE_CODE = 'fi'
 
 TIME_ZONE = 'Europe/Helsinki'
+```
 
 Teksti näyttää object:lta, vaihdetaan tekstiksi lisäämällä models.py class:in alle
 
@@ -140,6 +152,7 @@ Teksti näyttää object:lta, vaihdetaan tekstiksi lisäämällä models.py clas
 
 from django.db import models
 
+```py
 class Kysymys(models.Model):
     # ...
     def __str__(self):
@@ -150,8 +163,10 @@ class Vaihtoehto(models.Model):
     # ...
     def __str__(self):
         return self.teksti
-
+```
 Admin sivussa monikot lisätty "s" kijain. Voidaan korjata lisämällä class Meta: model.py tiedostoon. Muista sisennys funktion alle!
+
+```py
 class Meta:
     verbose_name="kysymys"
     verbose_name_plural="kysymykset" /Huom! pienillä kirjaimilla
@@ -160,11 +175,11 @@ class Meta():
         verbose_name="vaihtoehto"
         verbose_name_plural="vaihtoehdot"
 
-  
+``` 
 Lisätään näkymiä/vews
 
 kysely/views.py¶
-
+```py
 def detail(request, question_id):
     return HttpResponse("You're looking at question %s." % question_id)
 
@@ -189,7 +204,7 @@ def tulokset(request, question_id):
 
 def äänestä(request, question_id):
     return HttpResponse(f"Olet äänestämässä kysymykseen {question_id}")
-
+```
 Huom! Käytettu f(string) muoto 
 
 Liitetään näkymät/views osoitteeseen kysely/urls.py
@@ -198,18 +213,19 @@ from django.urls import path
 
 from . import views
 
+```py
 urlpatterns = [
     path("", views.indeksi, name="indeksi"),
     path("<int:question_id>/", views.näytä, name="näytä"),
     path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
     path("<int:question_id>/aanesta/", views.äänestä, name="äänestä"),
 ]
-
+```
 Haetaan tietokannasta kysymyksiä
 
 kysely/views.py¶
 
-
+```py
 from django.http import HttpResponse
 
 from .models import Kysymys /voidaan importoida absolutesti from kysely/models.py
@@ -219,6 +235,7 @@ def index(request):
     kysymys_lista = Kysymys.objects.order_by("-julkaisupvm")[:2]
     vastaus_teksti = ", ".join([q.teksti for q in kysymys_lista])
     return HttpResponse(vastaus_teksti)
+```
 
 Django:ssa voidaan tehdä pohje/template jotka on html tiedostoa/file mutta sisältää oma django koodia
 
@@ -226,6 +243,7 @@ Luodaan kysely folder:n sisälle uusi folder templates, sen sisälle uusi kansio
 
 kysely/templates/kysely/indeksi.html¶
 
+```html
 {% if kysymykset %}
     <ul>
     {% for kysymys in kysymykset %}
@@ -235,7 +253,7 @@ kysely/templates/kysely/indeksi.html¶
 {% else %}
     <p>Ei kyselyitä.</p>
 {% endif %}
-
+```
 Uusitaan indeksi funktio lisämällä kysely/view.py :n 
 
 polls/views.py¶
@@ -243,15 +261,15 @@ from django.shortcuts import render
 
 from .models import Question
 
-
+```py
 def index(request):
     latest_question_list = Question.objects.order_by("-pub_date")[:5]
     context = {"latest_question_list": latest_question_list}
     return render(request, "polls/index.html", context)
 
-
+```
 Huom,uusi versio!
-
+```py
 def indeksi(request):
     kysymyslista = Kysymys.objects.order_by("-julkaisupvm")[:2]
     context = {
@@ -259,6 +277,7 @@ def indeksi(request):
     }
     return render(request, "kysely/indeksi.html", context)
 
+```
 
 Selain/browser ei näy djangon dynamista html. Renderin avulla ajetaan djangon html, 
 sen jälkeen näkyy selaimessa. Selain lukee vaan html.
@@ -277,7 +296,7 @@ from .models import Kysymys /Huom! lisätään
 
 
 
-
+```py
 def detail(request, question_id):
     try:
         question = Question.objects.get(pk=question_id)
@@ -293,7 +312,7 @@ def näytä(request, question_id):
         raise Http404("Question does not exist")
     return render(request, "kysely/näytä.html", {"kysymys": kysymys})
 
-
+```
 templates/kysely => lisätään näytä.html file
 
 {{ question }}
