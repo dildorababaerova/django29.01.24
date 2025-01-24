@@ -326,6 +326,9 @@ Djangossa on get_object_or_404() oma funktio valmiiksi, mitä voi käyttää sii
 
 
 polls/views.py¶
+
+```py
+
 from django.shortcuts import get_object_or_404, render
 
 from .models import Question
@@ -335,23 +338,28 @@ from .models import Question
 def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     return render(request, "polls/detail.html", {"question": question})
+```
 
 
 ____________________________________________________________________
 kysely/views.py¶
 
-
+```py
 from django.shortcuts import get_object_or_404, render
 
 from .models import Kysymys
-
-
 
 def näytä(request, kysymys_id):
     kysym = get_object_or_404(Kysymys, pk=kysymys_id)
     return render(request, "kysely/näytä.html", {"kysymys": kysym})
 
+```
+
+
+
 Kun vaihdettu question_id => kysymys_id:ksi, pitää vaihtaa kysely/urls.py
+
+```py
 
 from django.urls import path
 
@@ -363,7 +371,7 @@ urlpatterns = [
     path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
     path("<int:question_id>/aanesta/", views.äänestä, name="äänestä"),
 ]
-
+```
 
 Luodaan näytä.html lisämällä templates/kysely folderille
 
@@ -371,15 +379,18 @@ Huom! views.py :ssa question_text vaihdettu kysymys, sen takia vaihdetaan kysymy
 
 kysely/templates/kysely/näytä.html¶
 
+```html
 
-<h1>{{ kysymys.teksti}}</h1>    // Huom! Tässä teksti otettu models.py Kysymys class atribuutista, joka on sidottu Vaihtoehto class modelin 
-                                //kanssa  ForeignKey:lla
+<h1>{{ kysymys.teksti}}</h1>    
+// Huom! Tässä teksti otettu models.py Kysymys class atribuutista, joka on sidottu Vaihtoehto class modelin 
+//kanssa  ForeignKey:lla
 <ul>
 {% for valinta in kysymys.vaihtoehto_set.all %}
     <li>{{ valinta.teksti }}</li>
 {% endfor %}
 </ul>
 
+```
 
 indeksi.py :ssa huono tapa kirjoittaa ;
 
@@ -393,6 +404,8 @@ sen paikalle korjataan:
 Tässä app:ssa on esim. näytä niminen näkymä. Voisi olla toisessakin app:ssa näytä nimenen näkymä. Estetään sekoitusta toisten app:n kanssa lisäämällä app_name = "kysely"
 
 
+```py
+
 kysely/urls.py¶
 from django.urls import path
 
@@ -402,32 +415,39 @@ app_name = "kysely"
 urlpatterns = [
     path("", views.indeksi, name="indeksi"),
     path("<int:kysymys_id>/", views.näytä, name="näytä"),
-    path("<int:question_id>/tulokset/", views.tulokset, name="tulokset"),
-    path("<int:question_id>/äänestä/", views.äänestä, name="äänestä"),
+    path("<int:kysymys_id>/tulokset/", views.tulokset, name="tulokset"),
+    path("<int:kysymys_id>/äänestä/", views.äänestä, name="äänestä"),
 ]
+```
 
 
 sekä vaihdetaan;
 
 kysely/templates/kysely/index.html¶
-
+```html
 <li><a href="{% url 'näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
+
+```
 
 kysely/templates/kysely/index.html¶
 
+```html
 <li><a href="{% url 'kysely:näytä' kysym.id %}">{{ kysym.teksti }}</a></li>
 
+```
 
-Luodaan lokeen. Jos lähetetään kysymyksiä palvelimelle, silloin käytetään GET request-
-Jos lähetetään lomakkeen kysely, silloin käytetään post request.
 
-GET metodi sisältää vaan url osoitteen. 
-Jos POST metodi silloin on mahdollistaa lähettää tiedot, esim. lomakkkeen kentät(Lähettäjän kenttä, palautteen kenttän arvot).
+Luodaan lokeen. Jos lähetetään kysymyksiä palvelimelle, silloin käytetään `GET request`-
+Jos lähetetään lomakkeen kysely, silloin käytetään `post request`.
+
+`GET` metodi sisältää vaan url osoitteen. 
+Jos `POST` metodi silloin on mahdollistaa lähettää tiedot, esim. lomakkkeen kentät(Lähettäjän kenttä, palautteen kenttän arvot).
 
 Luodaan lomakkeen:
 
 kysely/templates/kysely/näytä.html¶
 
+```html
 
 <form action="{% url 'kysely:äänestä' kysymys.id %}" method="post">
 
@@ -449,10 +469,13 @@ kysely/templates/kysely/näytä.html¶
 </fieldset>
 <input type="submit" value="Äänestä">
 </form>
+```
 
 Seuraviksessa käsitelty ottaa äänestyksen vaihtoehto vastaan
 
 polls/views.py¶
+```py
+
 from django.http import HttpResponse, HttpResponseRedirect //HUom! importoitu
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -482,6 +505,7 @@ def äänestä(request, kysymys_id):  // Huom! vaihdetaan urls:py:ssa myös
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse("kysely:tulokset", args=(kysym.id,))) // UUdelleen ohjausta
+```
 
 
 
@@ -489,6 +513,7 @@ Seuravaksi tehdään tulokset.html sivu
 
 kysely/views.py¶
 
+```py
 
 from django.shortcuts import get_object_or_404, render
 
@@ -496,12 +521,14 @@ from django.shortcuts import get_object_or_404, render
 def tulokset(request, kysymys_id):   // Huom! vaihdetaan urls:py:ssa myös
     kysym = get_object_or_404(Kysymys, pk=kysymys_id)   // Huom! vaihdetaan urls:py:ssa myös
     return render(request, "kysely/tulokset.html", {"kysymys": kysym})
+```
 
 
 Luodaan tulokset.html file
 
 kysely/templates/kysely/tulokset.html¶
 
+```html
 
 <h1>{{ kysymys.teksti }}</h1>
 
@@ -512,13 +539,14 @@ kysely/templates/kysely/tulokset.html¶
 </ul>
 
 <a href="{% url 'kysely:näytä' kysymys.id %}">Äänestätkö uudelleen?</a>
+```
 
 
 voidaan tehdä generic/yleisiä näkymä. Voidaan selviämään vähemmällä koodeilla samasta asiasta.
 
 kysely/views.py¶
 
-
+```py
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -568,11 +596,12 @@ def äänestä(request, kysymys_id):  // Huom! vaihdetaan urls:py:ssa myös
         # user hits the Back button.
         return HttpResponseRedirect(reverse("kysely:tulokset", args=(kysym.id,))) // Uudelleen ohjausta
 
+```
 
 
     kysely/urls.py¶
 
-
+```py
 from django.urls import path
 
 from . import views
@@ -585,14 +614,16 @@ urlpatterns = [
     path("<int:kysymys_id>/äänestä/", views.äänestä, name="äänestä"),
 ]
     ...
+```
 
 
 
 
-Consolissa toimiminen
+## Consolissa toimiminen
 
-python manage.py shell
+- commento `python manage.py shell`
 
+```
 from kysely.models import Kysymys
 
 Kysymys.objects.all()
@@ -602,18 +633,21 @@ Kysymys.objects.first()
 >>> k.onko_julkaistu_lähiaikoina()
 False // koska lähiaikoina merkitsimme 1 päivä ennen
 
-Asennetaan 
-pip install ipython
+```
+
+## Asennetaan 
+`pip install ipython`
 
 Kokeillaan test.py
 
 Ensiksi luodaan uusu funktio models.py
 
 
-Testaus
+## Testaus
 
 
 kysely/models.py¶
+```py
 
 import datetime // Huom! import
 from django.utils import timezone // Huom! import
@@ -621,11 +655,12 @@ from django.utils import timezone // Huom! import
 def onko_julkaistu_lähiaikoina(self):
         nyt = timezone.now()
         return nyt - datetime.timedelta(days=1) <= self.julkaisupvm <= nyt
+```
 
 
 kysely/tests.py¶
 
-
+```py
 import datetime
 
 from django.test import TestCase
@@ -673,6 +708,7 @@ class KysymysModelTests(TestCase):
         vähimmän_kuin_vuorokausi = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
         tuore_kysymys = Kysymys(julkaisupvm=vähimmän_kuin_vuorokausi)
         self.assertIs(tuore_kysymys.onko_julkaistu_lähiaikoina(), True)
+```
 
 
 
@@ -680,9 +716,11 @@ Client ohjelma jolla voidaan ajaa samoja asia mitä webselain lähetää niitä 
 Djangon testissa käytettävä asiakas ohjelma, se toimii nyt täällä tavalla, että osoitteet syöttää sinne tekstinä ja sivun sisällön tekstinä. On graafista esitystä, mutta emme nähdä sivua, että se näyttää oikeasti selaimessa. Siihen on oma työkalut miten pystyy sen tekemään, mutta me voidaan tämän avulla voidaan tehdä paljon testaamista. Me pysytytään tarkistamaan, että sieltä tulee oikealainen sivuja ja sivussa oikeanäköinen HTML elementit.
 
 Konsolin annetaan komento:
- python manage.py shell
+ `python manage.py shell`
 
 Konsolin kirjoitetaan:
+```py
+```
 >>> from django.test.utils import setup_test_environment
 >>> setup_test_environment()
 >>> from django.test import Client
