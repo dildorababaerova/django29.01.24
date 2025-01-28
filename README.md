@@ -788,7 +788,14 @@ Not Found: /
 >>> response.status_code
 200
 >>> response.content
-b'\n    <ul>\n    \n        <li><a href="/polls/1/">What&#x27;s up?</a></li>\n    \n    </ul>\n\n'
+b'\n    
+<ul>\n    
+\n        
+<li><a href="/polls/1/">What&#x27;s 
+up?</a></li>\n    
+\n
+    </ul>\n
+\n'
 >>> response.context["kysymykset"]
 <QuerySet [<Question: What's up?>]>
 _____________________________________________________________________________
@@ -805,7 +812,7 @@ Luodaan uudella pvm:llä kysymys ja vaihtoehdot http://127.0.0.1:8000/admin :ssa
 mutta kun mennään etusivulle siellä näkyy, vaikka tulevaisuuden kysymys.
 
 kysely/views.py
-
+```py
 from django.utils import timezone
 
 class ListaNäkymä(generic.ListView):
@@ -829,6 +836,7 @@ class ListaNäkymä(generic.ListView):
         järjestetyt_kysymykset=ei_tulevaisuudessa("-julkaisupvm")
         
         return järjestetyt_kysymykset[:2]
+```
 
 Nämät koodit tulivät näkymään class ListaNäkymä: n def get_queryset(self):n. Silla voi rajoittaa ListView :ssa mitä sen Listassa näkyy.
 
@@ -840,7 +848,7 @@ Django ei näy test_models.py. Luodaan uusi file __init__.py test folderin sisä
 
 
 test/test_models.py
-
+```py
 from django.urls import reverse
 from django.utils import timezone
 import datetime
@@ -919,11 +927,12 @@ class KysymysIndeksiNäkymäTests(TestCase):
             vastaus.context["kysymykset"],
             [kysymys2, kysymys1],
         )
+```
         
         
 Testataan NäytäNäkymä 
 
-
+```py
 kysely/views.py
 
 class NäytäNäkymä(generic.DetailView):
@@ -958,6 +967,7 @@ class KysymysNäytäNäkymäTestit(TestCase):
         vastaus = self.client.get(osoite)
         self.assertContains(vastaus, mennyt_kysymys.teksti)
 
+```
 
 
 
@@ -968,7 +978,7 @@ class KysymysNäytäNäkymäTestit(TestCase):
 
  Lisätään kysely/static/kysely/style.css
 
- 
+```css
  body {
     background: white url("images/background.jpg") no-repeat;
 }
@@ -979,6 +989,8 @@ li a {
  li a {
     color: green;
 }
+```
+ 
 
 
 kysely/templates/kysely/indeksi.html
@@ -998,7 +1010,7 @@ Turha käyttä python koodija. Jos paljon kuvia ja tiedostoja, käytänössä CD
 
 
 Jos halutaan eri järjestyksen admin sivulla, päivämäärä näytetään ennen tekstiä:
-
+```py
 from django.contrib import admin
 
 from .models import Kysymys
@@ -1009,11 +1021,12 @@ class KysymysAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Kysymys, KysymysAdmin)
+```
 
 
 Kun painetaan vasemmän puolen debug merkki, tulee create a launch.json file. Mennään sinne,  tulee ylhäältä paalikossta Python Debugger. Mennään sinne
 ja valitaan Django Launch and debug a Django web application. Vaihdetaan =>
-
+````json
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -1032,11 +1045,12 @@ ja valitaan Django Launch and debug a Django web application. Vaihdetaan =>
             "justMyCode": false
         }
     ]
+```
 }
 
 Etsiminen/filtroiminen adminissa, kysely/admin.py:ssa:
 
-
+```py
 from django.contrib import admin
 
 from .models import Kysymys, Vaihtoehto
@@ -1048,26 +1062,29 @@ class VastausvaihtoehtoInline(admin.TabularInline):
 
 @admin.register(Kysymys)
 class KysymysAdmin(admin.ModelAdmin):
-    # date_hierarchy = "julkaisupvm"
+    //date_hierarchy = "julkaisupvm"
     fieldsets = [
         ("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
         ("Sisältö", {"fields": ["teksti"]}),
     ]
     inlines = [VastausvaihtoehtoInline]
     list_display = ["teksti", "julkaisupvm", "onko_julkaistu_lähiaikoina"]
-    search_fields = ["teksti"] # search_fields = ["question_text"]  => question_text => vaihdettu tekstiksi
+    search_fields = ["teksti"] 
+    //search_fields = ["question_text"]  => question_text => vaihdettu tekstiksi
 
 @admin.register(Vaihtoehto)
 class VaihtoehtoAdmin(admin.ModelAdmin):
     list_display = ["kysymys", "teksti"]
-    # Voidaan lisätä "Vaihtoehdolle" myös 
-    search_fields = ["teksti"] # Tai search_fields = ["teksti", "kysymys__teksti"]  kun lisätään "kysymys__teksti", se etsii kysymys kentältä. Huom! kaksi alaviiva.
+    //Voidaan lisätä "Vaihtoehdolle" myös 
+    search_fields = ["teksti"] 
+    // Tai search_fields = ["teksti", "kysymys__teksti"]  kun lisätään "kysymys__teksti", se etsii kysymys kentältä. Huom! kaksi alaviiva.
+```
 Jos katsotaan modelia klikkamalla Ctrl ja Vaihtoehto, mennään model.py:n. Siellä nähdään 
-kysymys = models.ForeignKey(Kysymys, on_delete=models.CASCADE)
+`kysymys = models.ForeignKey(Kysymys, on_delete=models.CASCADE)`
 Kysymys viittää toisen modeliin ForeignKey:lla. Tietokannassa Kysymys on id numerona. Emme voi suoraan käyttää id numerolla hakukentällä, koska se on vaan numero. Jos halutaan kysymys teksteinä, pitää sanoa Django:lle numeron kautta pitää etsiä tekstit. Siihen toimii Djangossa kahden alaviivaa merkintötapa.
 
 Django admin sivuttain näyttää oletuksena 100 kerrallaan. Django sivussa linkki miten pystyy vaihtamaan sitä. Sinne pystyy lisäämään list_per_page
-
+```py
 from django.contrib import admin
 
 from .models import Kysymys, Vaihtoehto
@@ -1093,8 +1110,9 @@ class KysymysAdmin(admin.ModelAdmin):
 class VaihtoehtoAdmin(admin.ModelAdmin):
     list_display = ["kysymys", "teksti"]
     search_fields = ["teksti", "kysymys__teksti"]
-    list_per_page = 6  # kuinka monta sivua voidaan näyttää 
-    list_max_show_all = 8 # voidaan rajoittaa max sivut määrämällä
+    list_per_page = 6  // kuinka monta sivua voidaan näyttää 
+    list_max_show_all = 8 // voidaan rajoittaa max sivut määrämällä
+```
 
 
 Tulee ongelma Django adminissa, jos siellä on viittauksen toiseen modeliin, esim.muokkaa vaihtoehto sivulla, Kysymys kentää viitää Kysymys modelin. Oletuksena renderoi kaikki kysymyksiä mitkä tietokannassa on. Jos ajatellaan, ettää käyttäjät vaikka 10 000 ja käyttävät kenta, siellä voisi olla todella paljon kysymyksia ja lataaminen vie hirveä paljon aika. Sinne on ratkaisu miten voi estää:
@@ -1107,11 +1125,11 @@ class QuestionAdmin(admin.ModelAdmin):
     ordering = ["date_created"]
     search_fields = ["question_text"]
 class ChoiceAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["question"] # Pitää lisätä
+    autocomplete_fields = ["question"] //Pitää lisätä
 _________________________________________
 
 
-
+```py
 from django.contrib import admin
 
 from .models import Kysymys, Vaihtoehto
@@ -1123,7 +1141,7 @@ class VastausvaihtoehtoInline(admin.TabularInline):
 
 @admin.register(Kysymys)
 class KysymysAdmin(admin.ModelAdmin):
-    # date_hierarchy = "julkaisupvm"
+    //date_hierarchy = "julkaisupvm"
     fieldsets = [
         ("Päivämäärätiedot", {"fields": ["julkaisupvm"]}),
         ("Sisältö", {"fields": ["teksti"]}),
@@ -1139,7 +1157,8 @@ class VaihtoehtoAdmin(admin.ModelAdmin):
     search_fields = ["teksti", "kysymys__teksti"]
     list_per_page = 6  
     list_max_show_all = 8 
-    autocomplete_fields = ["kysymys"] # Tulee ladattua aika nopeasti!!!!
+    autocomplete_fields = ["kysymys"] // Tulee ladattua aika nopeasti!!!!
+```
 
 Voidaaan lisätä consoliin muutamia kysymyksiä.
 python manage.py shell
@@ -1190,7 +1209,7 @@ Out[18]: datetime.datetime(2014, 9, 5, 22, 40, 58, tzinfo=datetime.timezone.utc)
 
 https://medium.com/@franciscovcbm/infinite-scroll-with-django-and-htmx-27f61cfaf911 voidaan katsoa oppimaan syvemmin
 
-Voidaan vaihtaa/ylikirjoittaa django admin:n sivu omalla tavalla.Tassa esimerkki miten voidaan vaihtaa etupääotsikko
+Voidaan vaihtaa/ylikirjoittaa django admin:n sivu omalla tavalla.Tässa esimerkki miten voidaan vaihtaa etupääotsikko
 
 venv=> lib/python3.10/site-packages => django => contrib => admin => templates => admin => base_site.html sieltä otetaan copy ja paste sivusto/templates alle admin/base_site.html tiedosto:
 
@@ -1262,7 +1281,7 @@ templates\kysely:n sisällä olevien html tiedostoihin lisätään
 </html>
 </body>
 
-Voidaan lisätä requirments.txt. Se on yleensä semmonen teidosto, mistä pip insall packet:t asentaa. 
+Voidaan lisätä requirments.txt. Se on yleensä semmonen tiedosto, mistä pip insall package:t asentaa. 
 pip freeze > requirements.txt
 ja erilla tavalla:
 pip install pip-tools
