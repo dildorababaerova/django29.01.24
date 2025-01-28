@@ -1026,7 +1026,7 @@ admin.site.register(Kysymys, KysymysAdmin)
 
 Kun painetaan vasemmän puolen debug merkki, tulee create a launch.json file. Mennään sinne,  tulee ylhäältä paalikossta Python Debugger. Mennään sinne
 ja valitaan Django Launch and debug a Django web application. Vaihdetaan =>
-````json
+```json
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -1045,8 +1045,8 @@ ja valitaan Django Launch and debug a Django web application. Vaihdetaan =>
             "justMyCode": false
         }
     ]
-```
 }
+```
 
 Etsiminen/filtroiminen adminissa, kysely/admin.py:ssa:
 
@@ -1213,7 +1213,7 @@ Voidaan vaihtaa/ylikirjoittaa django admin:n sivu omalla tavalla.Tässa esimerkk
 
 venv=> lib/python3.10/site-packages => django => contrib => admin => templates => admin => base_site.html sieltä otetaan copy ja paste sivusto/templates alle admin/base_site.html tiedosto:
 
-
+```html
 {% extends "admin/base.html" %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
@@ -1226,6 +1226,7 @@ venv=> lib/python3.10/site-packages => django => contrib => admin => templates =
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+```
 
 
 Voidaan instaloida Django_Debug_Toolbar
@@ -1233,6 +1234,7 @@ Voidaan instaloida Django_Debug_Toolbar
 pip install django-debug-toolbar
 Pitää tarkistaa onko settings.py :ssa INSTALLED_APPS:ssa 'django.contrib.staticfiles', asennettuna
 ja TEMPLATES:ssa varmistaa
+```
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -1240,6 +1242,7 @@ TEMPLATES = [
         # ...
     }
 ]
+```
 
 ja pitää lisätä INSTALLED_APPS:in 
 
@@ -1251,12 +1254,14 @@ INSTALLED_APPS = [
 
 ja pitää lisätä URLs:in 
 
+```
 from django.urls import include, path
 
 urlpatterns = [
     # ...
     path("__debug__/", include("debug_toolbar.urls")),
 ]
+```
 
 Sitten lisäätään:
 MIDDLEWARE = [
@@ -1275,11 +1280,14 @@ INTERNAL_IPS = [
 
 
 templates\kysely:n sisällä olevien html tiedostoihin lisätään 
+```html
 <html>
 <body>
-# ...
-</html>
+{% block content %}
+{% endblock %}
 </body>
+</html>
+```
 
 Voidaan lisätä requirments.txt. Se on yleensä semmonen tiedosto, mistä pip insall package:t asentaa. 
 pip freeze > requirements.txt
@@ -1305,6 +1313,7 @@ pip install -r requirements.txt täällä tavalla pystyy asentamaan kaikki paket
 
 Tehdään base.html => templates\kysely:n
 Voidaan periytää 
+```html
 {% load static %}
 <html>
 <body>
@@ -1316,6 +1325,7 @@ Voidaan periytää
 </head>
 </body>
 </html>
+```
 
 Ja muutetaan muita html tiedostoja lisäämällä 
 
@@ -1326,7 +1336,7 @@ Otetaan {% load static %} pois.
 {% extends kysely/base.html %} ensimmäisenä rivinä
 
 Ja otetaan pois
-
+```html
 <html>
 <body>
 <head>
@@ -1335,6 +1345,7 @@ Ja otetaan pois
 </head>
 </body>
 </html>
+```
 
 Ja html sisältö laitetaan 
 
@@ -1345,7 +1356,7 @@ Huom!sisältö tänne
 
 Eli esimerkiksi index.html:
 
-
+```html
 {% extends 'kysely/base.html' %}
 
 {% block content %}
@@ -1360,6 +1371,7 @@ Eli esimerkiksi index.html:
     <p>Ei kyselyitä saatavilla.</p>
 {% endif %}
 {% endblock %}
+```
 
 
 
